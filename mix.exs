@@ -34,7 +34,6 @@ defmodule VerifyOrigin.MixProject do
   defp deps do
     [
       {:ex_doc, "~> 0.15", only: :dev},
-      {:phoenix, "~> 1.4"},
       {:plug, "~> 1.8"}
     ]
   end

@@ -2,13 +2,10 @@ defmodule VerifyOriginTest do
   use ExUnit.Case, async: true
   use Plug.Test
 
-  def url(), do: "https://example.com"
-  def origin(), do: "https://example.com"
+  def origin(), do: "http://www.example.com"
 
   def build_conn_for_path(path, method \\ :get) do
     conn(method, path)
-    |> put_private(:phoenix_endpoint, __MODULE__)
-    |> put_private(:phoenix_router, __MODULE__)
   end
 
   test "allows same-origin request for safe requests" do
