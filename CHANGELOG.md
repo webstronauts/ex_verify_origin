@@ -2,7 +2,9 @@
 
 All notable changes to `ex_verify_origin` will be documented in this file.
 
-## v1.1.0 (to be released)
+## v1.1.0 (2020-03-12)
+
+### Enhancements
 
 - Replace Phoenix url helper with custom one
 

@@ -1,7 +1,7 @@
 defmodule VerifyOrigin.MixProject do
   use Mix.Project
 
-  @version "1.0.0"
+  @version "1.1.0"
   @description "Plug adapter to protect from CSRF attacks by verifying the `Origin` header."
 
   def project do
