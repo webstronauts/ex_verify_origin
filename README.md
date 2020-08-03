@@ -12,7 +12,7 @@ To use VerifyOrigin, you can add it to your application's dependencies.
 ```elixir
 def deps do
   [
-    {:ex_verify_origin, "~> 0.1.0"}
+    {:ex_verify_origin, "~> 1.1.0"}
   ]
 end
 ```
