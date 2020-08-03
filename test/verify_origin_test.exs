@@ -2,105 +2,94 @@ defmodule VerifyOriginTest do
   use ExUnit.Case, async: true
   use Plug.Test
 
+  alias VerifyOrigin.UnverifiedOriginError
+
   def url(), do: "http://www.example.com"
   def origin(), do: "http://www.example.com"
 
-  def build_conn_for_path(path, method \\ :get) do
-    conn(method, path)
+  def call(conn), do: call(conn, origin())
+
+  def call(conn, plug_opts) when is_list(plug_opts), do: call(conn, origin(), plug_opts)
+
+  def call(conn, origin, plug_opts \\ [])
+  def call(conn, nil, plug_opts), do: call_plug_with_opts(conn, plug_opts)
+
+  def call(conn, origin, plug_opts) do
+    conn
+    |> put_req_header("origin", origin)
+    |> call_plug_with_opts(plug_opts)
+  end
+
+  defp call_plug_with_opts(conn, plug_opts) do
+    conn
     |> put_private(:phoenix_endpoint, __MODULE__)
     |> put_private(:phoenix_router, __MODULE__)
+    |> VerifyOrigin.call(VerifyOrigin.init(plug_opts))
   end
 
   test "allows same-origin request for safe requests" do
-    conn =
-      build_conn_for_path("/foo")
-      |> put_req_header("origin", origin())
-      |> VerifyOrigin.call(VerifyOrigin.init())
-
+    conn = call(conn(:get, "/foo"))
     refute conn.halted
   end
 
   test "allows same-origin requests for unsafe requests" do
-    conn =
-      build_conn_for_path("/foo", :post)
-      |> put_req_header("origin", origin())
-      |> VerifyOrigin.call(VerifyOrigin.init())
-
+    conn = call(conn(:post, "/foo"))
     refute conn.halted
   end
 
-  test "halts cross-origin requests for safe requests" do
-    conn =
-      build_conn_for_path("/foo")
-      |> put_req_header("origin", "https://evil.com")
-      |> VerifyOrigin.call(VerifyOrigin.init())
-
-    assert conn.halted
+  test "raise error for cross-origin requests for safe requests" do
+    assert_raise UnverifiedOriginError, fn ->
+      call(conn(:get, "/foo"), "https://evil.com")
+    end
   end
 
-  test "halts cross-origin requests for unsafe requests" do
-    conn =
-      build_conn_for_path("/foo")
-      |> put_req_header("origin", "https://evil.com")
-      |> VerifyOrigin.call(VerifyOrigin.init())
-
-    assert conn.halted
+  test "raise error for cross-origin requests for unsafe requests" do
+    assert_raise UnverifiedOriginError, fn ->
+      call(conn(:get, "/foo"), "https://evil.com")
+    end
   end
 
   test "allows request for safe requests without origin" do
-    conn =
-      build_conn_for_path("/foo")
-      |> VerifyOrigin.call(VerifyOrigin.init())
-
+    conn = call(conn(:get, "/foo"))
     refute conn.halted
   end
 
   test "allows request for safe requests without origin when not strict" do
-    conn =
-      build_conn_for_path("/foo")
-      |> VerifyOrigin.call(VerifyOrigin.init(strict: false))
-
+    conn = call(conn(:get, "/foo"), strict: false)
     refute conn.halted
   end
 
-  test "halts request for safe requests without origin when safe not allowed" do
-    conn =
-      build_conn_for_path("/foo")
-      |> VerifyOrigin.call(VerifyOrigin.init(allow_safe: false))
-
-    assert conn.halted
+  test "raise error for request for safe requests without origin when safe not allowed" do
+    assert_raise UnverifiedOriginError, fn ->
+      call(conn(:get, "/foo"), nil, allow_safe: false)
+    end
   end
 
   test "falls back to referer for safe requests without origin" do
     conn =
-      build_conn_for_path("/foo")
+      conn(:get, "/foo")
       |> put_req_header("referer", origin())
-      |> VerifyOrigin.call(VerifyOrigin.init(fallback_to_referer: true))
+      |> call(nil, fallback_to_referer: true)
 
     refute conn.halted
   end
 
-  test "halts request for unsafe requests without origin" do
-    conn =
-      build_conn_for_path("/foo", :post)
-      |> VerifyOrigin.call(VerifyOrigin.init())
-
-    assert conn.halted
+  test "raise error for request for unsafe requests without origin" do
+    assert_raise UnverifiedOriginError, fn ->
+      call(conn(:post, "/foo"), nil)
+    end
   end
 
   test "allows request for unsafe requests without origin when not strict" do
-    conn =
-      build_conn_for_path("/foo", :post)
-      |> VerifyOrigin.call(VerifyOrigin.init(strict: false))
-
+    conn = call(conn(:post, "/foo"), nil, strict: false)
     refute conn.halted
   end
 
   test "falls back to referer for unsafe requests without origin" do
     conn =
-      build_conn_for_path("/foo", :post)
+      conn(:post, "/foo")
       |> put_req_header("referer", origin())
-      |> VerifyOrigin.call(VerifyOrigin.init(fallback_to_referer: true))
+      |> call(nil, fallback_to_referer: true)
 
     refute conn.halted
   end

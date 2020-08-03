@@ -13,6 +13,14 @@ defmodule VerifyOrigin do
 
   @safe_methods ["GET", "HEAD"]
 
+  defmodule UnverifiedOriginError do
+    @moduledoc "Error raised when origin is unverified."
+
+    message = "unverified Origin header"
+
+    defexception message: message, plug_status: 403
+  end
+
   def init(opts \\ []) do
     origin = Keyword.get(opts, :origin)
     strict = Keyword.get(opts, :strict, true)
@@ -41,9 +49,7 @@ defmodule VerifyOrigin do
     if verified_origin?(conn, origin, config) do
       conn
     else
-      conn
-      |> send_resp(:bad_request, "")
-      |> halt()
+      raise UnverifiedOriginError
     end
   end
 
