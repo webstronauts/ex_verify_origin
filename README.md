@@ -1,6 +1,6 @@
 # ex_verify_origin
 
-[![Build Status](https://img.shields.io/github/workflow/status/webstronauts/ex_verify_origin/test.svg?style=flat-square)](https://github.com/webstronauts/ex_verify_origin/actions?query=workflow%test)
+[![Build Status](https://img.shields.io/github/workflow/status/webstronauts/ex_verify_origin/test.svg?style=flat-square)](https://github.com/webstronauts/ex_verify_origin/actions?query=workflow%3Atest)
 [![Hex.pm](https://img.shields.io/hexpm/v/ex_verify_origin.svg?style=flat-square)](https://hex.pm/packages/ex_verify_origin)
 
 A Plug adapter to protect from CSRF attacks by verifying the `Origin` header.
