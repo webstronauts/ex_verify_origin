@@ -5,6 +5,10 @@
 
 A Plug adapter to protect from CSRF attacks by verifying the `Origin` header.
 
+<a href="https://webstronauts.com/">
+  <img src="https://webstronauts.com/badges/sponsored-by-webstronauts.svg" alt="Sponsored by The Webstronauts" width="200" height="65">
+</a>
+
 ## Installation
 
 To use VerifyOrigin, you can add it to your application's dependencies.
