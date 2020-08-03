@@ -32,30 +32,28 @@ defmodule VerifyOrigin do
   end
 
   def call(conn, config) do
-    %{origin: allowed_origin, strict: strict, allow_safe: allow_safe} = config
-
     origin =
       conn
       |> get_req_header("origin")
       |> fallback_to_referer(conn, config)
       |> List.first()
 
-    cond do
-      origin == nil && !strict ->
-        conn
-
-      origin == nil && allow_safe && conn.method in @safe_methods ->
-        conn
-
-      origin == allowed_origin ->
-        conn
-
-      true ->
-        conn
-        |> send_resp(403, "")
-        |> halt()
+    if verified_origin?(conn, origin, config) do
+      conn
+    else
+      conn
+      |> send_resp(:bad_request, "")
+      |> halt()
     end
   end
+
+  defp verified_origin?(_conn, nil, %{strict: false}),
+    do: true
+
+  defp verified_origin?(%{method: method}, nil, %{allow_safe: true}) when method in @safe_methods,
+    do: true
+
+  defp verified_origin?(_conn, origin, %{origin: allowed_origin}), do: origin == allowed_origin
 
   defp get_origin_from_conn(conn) do
     conn
