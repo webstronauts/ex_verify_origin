@@ -28,9 +28,7 @@ defmodule VerifyOrigin do
   end
 
   def call(conn, config = %{origin: nil}) do
-    current_origin = get_origin_from_conn(conn)
-
-    call(conn, %{config | origin: current_origin})
+    call(conn, %{config | origin: get_origin_from_conn(conn)})
   end
 
   def call(conn, config) do
@@ -59,16 +57,12 @@ defmodule VerifyOrigin do
     end
   end
 
-  defp get_origin_from_conn(%{host: h, port: 80}) do
-    "http://#{h}"
-  end
-
-  defp get_origin_from_conn(%{host: h, port: 443}) do
-    "https://#{h}"
-  end
-
-  defp get_origin_from_conn(%{host: h, port: p, scheme: s}) do
-    "#{s}://#{h}:#{p}"
+  defp get_origin_from_conn(conn) do
+    conn
+    |> Phoenix.Controller.current_url()
+    |> URI.parse()
+    |> Map.put(:path, nil)
+    |> to_string()
   end
 
   defp fallback_to_referer([], conn, %{fallback_to_referer: true}) do
