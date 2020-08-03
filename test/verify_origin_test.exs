@@ -93,4 +93,27 @@ defmodule VerifyOriginTest do
 
     refute conn.halted
   end
+
+  test "is skipped when plug_skip_verify_origin is true" do
+    conn =
+      conn(:post, "/foo")
+      |> put_private(:plug_skip_verify_origin, true)
+      |> call()
+
+    refute conn.halted
+
+    conn =
+      conn(:post, "/foo")
+      |> put_private(:plug_skip_verify_origin, true)
+      |> call("https://evil.com")
+
+    refute conn.halted
+
+    conn =
+      conn(:post, "/foo")
+      |> put_private(:plug_skip_verify_origin, true)
+      |> call(nil)
+
+    refute conn.halted
+  end
 end

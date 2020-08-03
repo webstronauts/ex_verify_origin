@@ -46,7 +46,7 @@ defmodule VerifyOrigin do
       |> fallback_to_referer(conn, config)
       |> List.first()
 
-    if verified_origin?(conn, origin, config) do
+    if verified_origin?(conn, origin, config) || skip_verify_origin?(conn) do
       conn
     else
       raise UnverifiedOriginError
@@ -74,4 +74,7 @@ defmodule VerifyOrigin do
   end
 
   defp fallback_to_referer(origin, _conn, _opts), do: origin
+
+  defp skip_verify_origin?(%Plug.Conn{private: %{plug_skip_verify_origin: true}}), do: true
+  defp skip_verify_origin?(%Plug.Conn{}), do: false
 end
